@@ -39,7 +39,7 @@ from rq import Queue
 import pybossa.model as model
 from flask.ext.babel import gettext
 from pybossa.core import signer, uploader, sentinel, newsletter
-from pybossa.util import Pagination
+from pybossa.util import Pagination, admin_required
 from pybossa.util import get_user_signup_method
 from pybossa.cache import users as cached_users
 from pybossa.auth import ensure_authorized_to
@@ -190,6 +190,7 @@ def confirm_email():
 
 
 @blueprint.route('/register', methods=['GET', 'POST'])
+@admin_required
 def register():
     """
     Register method for creating a PyBossa account.
