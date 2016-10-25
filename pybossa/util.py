@@ -53,6 +53,17 @@ def admin_required(f):  # pragma: no cover
     return decorated_function
 
 
+def admin_or_subadmin_required(f):  # pragma: no cover
+    """Check if the user is and admin or not."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.admin or current_user.subadmin:
+            return f(*args, **kwargs)
+        else:
+            return abort(403)
+    return decorated_function
+
+
 # from http://flask.pocoo.org/snippets/56/
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
