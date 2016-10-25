@@ -50,6 +50,8 @@ class Task(db.Model, DomainObject):
     info = Column(JSON)
     #: Number of answers to collect for this task.
     n_answers = Column(Integer, default=30)
+    #: completed task can be marked as exported=True after its exported
+    exported = Column(Boolean, default=False)
 
     task_runs = relationship(TaskRun, cascade='all, delete, delete-orphan', backref='task')
 
