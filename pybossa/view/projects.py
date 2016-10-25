@@ -42,7 +42,7 @@ from pybossa.model.task_run import TaskRun
 from pybossa.model.auditlog import Auditlog
 from pybossa.model.webhook import Webhook
 from pybossa.model.blogpost import Blogpost
-from pybossa.util import Pagination, admin_required, get_user_id_or_ip, rank
+from pybossa.util import Pagination, admin_required, get_user_id_or_ip, rank, admin_or_subadmin_required
 from pybossa.auth import ensure_authorized_to
 from pybossa.cache import projects as cached_projects
 from pybossa.cache import categories as cached_cat
@@ -211,6 +211,7 @@ def project_cat_index(category, page):
 
 @blueprint.route('/new', methods=['GET', 'POST'])
 @login_required
+@admin_or_subadmin_required
 def new():
     ensure_authorized_to('create', Project)
     form = ProjectForm(request.form)
@@ -270,6 +271,7 @@ def new():
 
 @blueprint.route('/<short_name>/tasks/taskpresentereditor', methods=['GET', 'POST'])
 @login_required
+@admin_or_subadmin_required
 def task_presenter_editor(short_name):
     errors = False
     (project, owner, n_tasks, n_task_runs,
@@ -277,8 +279,9 @@ def task_presenter_editor(short_name):
      last_activity, n_results) = project_by_shortname(short_name)
 
     title = project_title(project, "Task Presenter Editor")
-    ensure_authorized_to('read', project)
-    ensure_authorized_to('update', project)
+    if not current_user.admin and not current_user.subadmin:
+        ensure_authorized_to('read', project)
+        ensure_authorized_to('update', project)
 
     pro = pro_features()
 
@@ -979,6 +982,7 @@ def delete_tasks(short_name):
 
 
 @blueprint.route('/<short_name>/tasks/export')
+@admin_or_subadmin_required
 def export_to(short_name):
     """Export Tasks and TaskRuns in the given format"""
     (project, owner, n_tasks, n_task_runs,
@@ -990,12 +994,13 @@ def export_to(short_name):
     loading_text = gettext("Exporting data..., this may take a while")
     pro = pro_features()
 
-    if project.needs_password():
-        redirect_to_password = _check_if_redirect_to_password(project)
-        if redirect_to_password:
-            return redirect_to_password
-    else:
+    if not current_user.admin and not current_user.subadmin:
         ensure_authorized_to('read', project)
+        if project.needs_password():
+            redirect_to_password = _check_if_redirect_to_password(project)
+            if redirect_to_password:
+                return redirect_to_password
+        
 
     def respond():
         return render_template('/projects/export.html',
