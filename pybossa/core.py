@@ -93,6 +93,9 @@ def configure_app(app):
         print "Slave binds are misssing, adding Master as slave too."
         app.config['SQLALCHEMY_BINDS'] = \
             dict(slave=app.config.get('SQLALCHEMY_DATABASE_URI'))
+    # Two factor authentication
+    global twofactor_auth
+    twofactor_auth = app.config.get('ENABLE_TWO_FACTOR_AUTH')
 
 
 def setup_sse(app):
